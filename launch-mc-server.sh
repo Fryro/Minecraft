@@ -2,47 +2,95 @@
 #	- Minecraft EULA created and in working directory, and prompted to accept.
 #	- Minecraft Forge Downloaded and Installed in working directory.
 
+MINECRAFT_RELEASE=""
+FORGE_RELEASE=""
+FORGE_PAGE="https://files.minecraftforge.net/net/minecraftforge/forge/index_"
+LOGFILE="script_log.txt"
+SETTINGS_FILE="settings.cfg"
+FORGE_INSTALLER=""
+
+# Logging functions
+function debug() {
+	if [ -n "$DEBUG" ]; then
+		echo "$(date +'%F-%T %z') DEBUG: $*" | tee -a "${LOGFILE}" 2>&1
+	fi
+}
+
+function info() {
+	echo "$(date +'%F-%T %z') INFO: $*" | tee -a "${LOGFILE}"
+}
+
+function warning() {
+	echo "$(date +'%F-%T %z') WARNING: $*" | tee -a "${LOGFILE}" 2>&1
+}
+
+function error() {
+	echo "$(date +'%F-%T %z') ERROR: $*" | tee -a "${LOGFILE}" 2>&1
+}
+	
+function get_setting() {
+	setting="$(grep "^${1}=" "${SETTINGS_FILE}" | head -n 1 | cut -d= -f2)"
+	echo "$setting"
+}
+
+
+# Find the recommended or latest forge versions for a given minecraft instance
+function get_forge_version() {
+	case "$1" in
+	latest)
+		version="latest"
+		;;
+	recommended)
+		version="recommended"
+		;;
+	*)
+		error "Only options to find forge version are latest and recommended"
+		exit 1
+		;;
+	esac
+	forge_version="$(curl -s "${FORGE_PAGE}${MINECRAFT_RELEASE}.html" | grep -A 1 "fa promo-$version" | tail -n 1 | cut -d- -f2 | egrep -o '[0-9.]+')"
+	if [ -z "$forge_version" ]; then
+		error "Unable to retrieve forge version, it must be specified in the config"
+		exit 2
+	fi
+	echo "$forge_version"
+}
 
 
 # This function makes a server directory, in which this script operates.
-make_script_directories() {
+function make_script_directories() {
 	if ! [ -e "minecraft_server" ]; then
 		mkdir minecraft_server
-	fi
-	if ! [ -e "logs" ]; then
-		mkdir logs
-		touch logs/script_log.txt
 	fi
 	if ! [ -e minecraft_server/"installers" ]; then
 		mkdir minecraft_server/installers
 	fi
 	
 	# Logging
-	echo "---------------" >> logs/script_log.txt
-	echo "+++Begin Log+++" >> logs/script_log.txt
-	echo "Checking/Making Directories [minecraft_server, logs, minecraft_server/installers]" >> logs/script_log.txt
+	info "+++Begin Log+++"
+	info "Checking/Making Directories [minecraft_server, logs, minecraft_server/installers]"
 }
 
 
 # This function checks for the 'eula.txt' file. If it does not find it,
 # it will fetch it from mojang's documentation. Then it will prompt the user
 # to accept the EULA.
-make_eula() {
+function make_eula() {
 	if ! [ -e "eula.txt" ]; then
 		touch eula.txt
 		
 		# Logging
-		echo "Created [eula.txt]" >> ../logs/script_log.txt
+		info "Created [eula.txt]"
 	fi
 
 	if ! (grep -q 'eula=true' eula.txt); then
 		read -p "Minecraft EULA: (https://account.mojang.com/documents/minecraft_eula). Do you accept the EULA? [y/n]: " eula_answer
 		if (echo $eula_answer | grep -i -q 'y'); then
 			echo "eula=true" > eula.txt
-			echo "You have accepted the minecraft EULA."
+			info "You have accepted the minecraft EULA."
 		else
 			echo "eula=false" > eula.txt
-			echo "You have not accepted the minecraft EULA. You will be unable to launch the server until you do so."
+			info "You have not accepted the minecraft EULA. You will be unable to launch the server until you do so."
 		fi
 	fi
 
@@ -53,40 +101,46 @@ make_eula() {
 
 # This function checks the minecraft version, then goes and retrieves the Minecraft Forge installer for that version.
 # I forgo the option to check for a java 8 installation, and instead this script will assume a proper version of Java 8 is installed.
-get_forge() {
-	if ! (grep -q "forge installed" ../settings.cfg); then
-		
-		# Logging
-		echo "Forge not installed for indicated version of minecraft. Getting installer." >> ../logs/script_log.txt
+function get_forge() {
+	MINECRAFT_RELEASE="$(get_setting minecraft_release)"
+	if [ -z "$MINECRAFT_RELEASE" ]; then
+		error "No minecraft server version selected.  Set minecraft_release in $SETTINGS_FILE and retry"
+		exit 1
+	fi
 
-		if (grep -q 'Minecraft Version= 1.7.10' ../settings.cfg); then
-			if ! [ -e "forge-1.7.10-10.13.4.1614-1.7.10-installer.jar" ]; then
-				echo "----++++ [Downloading Forge for 1.7.10] ++++----"
-				wget https://maven.minecraftforge.net/net/minecraftforge/forge/1.7.10-10.13.4.1614-1.7.10/forge-1.7.10-10.13.4.1614-1.7.10-installer.jar
-				# Logging
-				echo "Forge downloaded for [1.7.10]" >> ../logs/script_log.txt
+	# get the latest and recommended forge releases
+	FORGE_RELEASE="$(get_setting forge_release)"
+	if [ -z "$FORGE_RELEASE" ]; then
+		PS3="Which forge version should be used?:"
+		latest="$(get_forge_version latest)"
+		recommended="$(get_forge_version recommended)"
+		select forge in $latest $recommended; do
+			info "forge version selected: $forge"
+			FORGE_RELEASE="$forge"
+			break
+		done
+	fi
 
-			fi	
-		
-			chmod +x "forge-1.7.10-10.13.4.1614-1.7.10-installer.jar"
-			forge_file="forge-1.7.10-10.13.4.1614-1.7.10-installer.jar"
+	if echo "$MINECRAFT_RELEASE" | grep -q '^1\.[789]\.'; then
+		append_to_url="-$MINECRAFT_RELEASE"
+	else
+		append_to_url=""
+	fi
 
-		elif (grep -q 'Minecraft Version= 1.12.2' ../settings.cfg); then
-			if ! [ -e "forge-1.12.2-14.23.5.2855-installer.jar" ]; then
-				echo "----++++ [Downloading Forge for 1.12.2] ++++----"
-				wget https://maven.minecraftforge.net/net/minecraftforge/forge/1.12.2-14.23.5.2855/forge-1.12.2-14.23.5.2855-installer.jar
-				# Logging
-				echo "Forge Downloaded for [1.12.2]" >> ../logs/script_log.txt
-			fi
-
-			chmod +x "forge-1.12.2-14.23.5.2855-installer.jar"
-			forge_file="forge-1.12.2-14.23.5.2855-installer.jar"
-
+	forge_to_use="${MINECRAFT_RELEASE}-${FORGE_RELEASE}${append_to_url}"
+	if ! [ -e "forge-${forge_to_use}-installer.jar" ]; then
+		info "Downloading Forge version $FORGE_RELEASE for $MINECRAFT_RELEASE"
+		if curl -OL "https://maven.minecraftforge.net/net/minecraftforge/forge/${forge_to_use}/forge-${forge_to_use}-installer.jar"; then
+			info "Forge Downloaded"
+			FORGE_INSTALLER="forge-${forge_to_user}-installer.jar"
+		else
+			error "Forge was unable to download, check curl error and re-run"
+			exit 3
 		fi
 	fi
 }
 
-install_server() {
+function install_server() {
 	if ! (grep -q "forge installed" ../settings.cfg); then
 		
 		# This line uses the forge installer. 
@@ -105,7 +159,7 @@ install_server() {
 }
 
 # This function checks for server files that are neccessary, but aren't 'eula.txt'. It will create+populate them if they do not exist.
-make_server_files() { 
+function make_server_files() { 
 
 	# Checks for a 'server.properties' file.
 	if ! [ -e server.properties ]; then
@@ -124,16 +178,10 @@ make_server_files() {
 }
 
 
+
 # This is the 'driver code'. It runs all the above functions, in the order they are defined.
 make_script_directories
-cd minecraft_server
 make_eula
 get_forge
-install_server
-make_server_files
-cd -
-echo "All major actions done by this script are logged to [./logs/script_log.txt]"
-
-# Logging
-echo "Script has finished." >> logs/script_log.txt
-echo "+++ END +++" >> logs/script_log.txt
+#install_server
+#make_server_files
