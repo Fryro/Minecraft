@@ -6,7 +6,7 @@ MINECRAFT_RELEASE=""
 FORGE_RELEASE=""
 FORGE_PAGE="https://files.minecraftforge.net/net/minecraftforge/forge/index_"
 LOGFILE="$(pwd)/script_log.txt"
-SETTINGS_FILE="$(pwd)/settings.cfg"
+SETTINGS_FILE="$(pwd)/minecraft-server/settings.cfg"
 FORGE_INSTALLER=""
 
 # Logging functions
