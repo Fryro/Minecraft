@@ -6,7 +6,7 @@ MINECRAFT_RELEASE=""
 FORGE_RELEASE=""
 FORGE_PAGE="https://files.minecraftforge.net/net/minecraftforge/forge/index_"
 LOGFILE="$(pwd)/script_log.txt"
-SETTINGS_FILE="settings.cfg"
+SETTINGS_FILE="$(pwd)/settings.cfg"
 FORGE_INSTALLER=""
 
 # Logging functions
@@ -59,16 +59,16 @@ function get_forge_version() {
 
 # This function makes a server directory, in which this script operates.
 function make_script_directories() {
-	if ! [ -e "minecraft_server" ]; then
-		mkdir minecraft_server
+	if ! [ -e "minecraft-server" ]; then
+		mkdir minecraft-server
 	fi
-	if ! [ -e "minecraft_server/used_forge_files" ]; then
-		mkdir minecraft_server/used_forge_files
+	if ! [ -e "minecraft-server/used-forge-files" ]; then
+		mkdir minecraft-server/used-forge-files
 	fi
 	
 	# Logging
 	info "+++Begin Log+++"
-	info "Checking/Making Directories [minecraft_server, minecraft_server/used-forge-files]"
+	info "Checking/Making Directories [minecraft-server, minecraft-server/used-forge-files]"
 }
 
 
@@ -76,7 +76,7 @@ function make_script_directories() {
 # it will fetch it from mojang's documentation. Then it will prompt the user
 # to accept the EULA.
 function make_eula() {
-	cd minecraft_server
+	cd minecraft-server
 	
 	if ! [ -e "eula.txt" ]; then
 		touch eula.txt
@@ -169,7 +169,7 @@ function get_forge() {
 }
 
 function install_server() {		
-	cd minecraft_server
+	cd minecraft-server
 	
 	# This line uses the forge installer. 
 	if java -jar ../$FORGE_INSTALLER --installServer; then
@@ -180,10 +180,10 @@ function install_server() {
 	fi
 
 	# This line moves ForgeInstallerLogs to the 'used' directory.
-	mv ./forge*installer*.log used_forge_files/
+	mv ./forge*installer*.log used-forge-files/
 
 	# This moves the 'used' forge installers away, to remove clutter.
-	mv ../*forge*installer* used_forge_files/	
+	mv ../*forge*installer* used-forge-files/	
 	
 	# Logging
 	info "Forge was installed. Installed Server for indicated Minecraft and Forge Releases"
@@ -193,7 +193,7 @@ function install_server() {
 
 # This function checks for server files that are neccessary, but aren't 'eula.txt'. It will create+populate them if they do not exist.
 function make_server_files() { 
-	cd minecraft_server
+	cd minecraft-server
 	
 	# Checks for a 'server.properties' file.
 	if ! [ -e "server.properties" ]; then
@@ -227,14 +227,14 @@ if ! [ -e "settings.cfg" ]; then
 	error "No 'settings.cfg' file found, cannot continue."
 else
 	if [ "$RELEASE" = "Pre 1.10" ]; then
-		if ! ( ls "minecraft_server" | (grep -q "forge.*universal.*.jar")); then
+		if ! ( ls "minecraft-server" | (grep -q "forge.*universal.*.jar")); then
 			if ! [ -e "*forge*installer*.jar" ]; then
 				get_forge
 			fi
 			install_server
 		fi
 	elif [ "$RELEASE" = "Post 1.10" ]; then
-		if ! ( ls "minecraft_server" | (grep -q "forge.*.jar")); then
+		if ! ( ls "minecraft-server" | (grep -q "forge.*.jar")); then
 			if ! [ -e "*forge*installer*.jar" ]; then
 				get_forge
 			fi
@@ -243,12 +243,17 @@ else
 	fi
 fi
 
+if ! ($1 == "container"); then
+	echo "-------------------------------------------------"
+	echo "------ The server was set up successfully! ------"
+	echo "------ Next steps:                         ------"
+	echo "------   1. Place ALL modpack files within ------"
+	echo "------       'minecraft-server' directory  ------"
+	echo "------                                     ------"
+	echo "------   2. Run script 'launch-mc-server'  ------"
+	echo "-------------------------------------------------"
 
-echo "-------------------------------------------------"
-echo "------ The server was set up successfully! ------"
-echo "------ Next steps:                         ------"
-echo "------   1. Place ALL modpack files within ------"
-echo "------       'minecraft_server' directory  ------"
-echo "------                                     ------"
-echo "------   2. Run script 'launch-mc-server'  ------"
-echo "-------------------------------------------------"
+else
+	cd minecraft-server
+	SERVER_JAR=$(ls | grep "forge.*universal.*")
+	java $(get_setting jvmargs) -jar $SERVER_JAR nogui

@@ -11,7 +11,7 @@ function java_line() {
 	java $(get_setting jvmargs) -jar "minecraft_server.*.jar nogui" 
 }
 
-cd minecraft_server
+cd minecraft-server
 
 # tmux new-session -d -s "minecraftServer" 'java -jar minecraft_server.1.12.2.jar nogui'
 # tmux new-session -d -s "minecraftServer" java_line
