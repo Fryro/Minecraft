@@ -243,7 +243,7 @@ else
 	fi
 fi
 
-if ! ($1 == "container"); then
+if ! [ "$1" == "container" ] ; then
 	echo "-------------------------------------------------"
 	echo "------ The server was set up successfully! ------"
 	echo "------ Next steps:                         ------"
