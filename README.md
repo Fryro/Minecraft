@@ -26,7 +26,7 @@ Before runtime, it should include...
 	minecraft_release (The version of minecraft you wish to run the server on).
 	forge_release (A choice between 'recommended' or 'latest' for the forge version).
 	eula (a true/false for accepting the minecraft EULA).
-	jvmargs (a space-delineated list of jvm arguments).  
+	jvmargs (a space-delineated list of jvm arguments).   
 ===============================================================================================
 
 
