@@ -256,5 +256,7 @@ if ! [ "$1" == "container" ]; then
 else
 	cd minecraft-server
 	SERVER_JAR=$(ls | grep "forge.*universal.*")
+	echo "running java command : java $(get_setting jvmargs) -jar $SERVER_JAR nogui"
+
 	java $(get_setting jvmargs) -jar $SERVER_JAR nogui
 fi
