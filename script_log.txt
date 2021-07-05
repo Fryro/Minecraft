@@ -148,3 +148,21 @@
 2021-07-05-15:14:46 -0400 INFO: Checking/Making Directories [minecraft-server, minecraft-server/used-forge-files]
 2021-07-05-15:14:56 -0400 INFO: +++Begin Log+++
 2021-07-05-15:14:56 -0400 INFO: Checking/Making Directories [minecraft-server, minecraft-server/used-forge-files]
+2021-07-05-15:18:08 -0400 INFO: +++Begin Log+++
+2021-07-05-15:18:08 -0400 INFO: Checking/Making Directories [minecraft-server, minecraft-server/used-forge-files]
+2021-07-05-15:18:08 -0400 INFO: Created [eula.txt]
+2021-07-05-15:18:08 -0400 INFO: You have accepted the Minecraft Server EULA.
+2021-07-05-15:18:08 -0400 INFO: Created 'server.properties' and populated with defaults.
+2021-07-05-15:18:09 -0400 INFO: Downloading Forge version 10.13.4.1614 for 1.7.10
+2021-07-05-15:18:09 -0400 INFO: Forge Downloaded
+2021-07-05-15:18:13 -0400 INFO: Server Installed
+2021-07-05-15:18:13 -0400 INFO: Forge was installed. Installed Server for indicated Minecraft and Forge Releases
+2021-07-05-15:19:27 -0400 INFO: +++Begin Log+++
+2021-07-05-15:19:27 -0400 INFO: Checking/Making Directories [minecraft-server, minecraft-server/used-forge-files]
+2021-07-05-15:19:27 -0400 INFO: Created [eula.txt]
+2021-07-05-15:19:27 -0400 INFO: You have accepted the Minecraft Server EULA.
+2021-07-05-15:19:27 -0400 INFO: Created 'server.properties' and populated with defaults.
+2021-07-05-15:19:28 -0400 INFO: Downloading Forge version 10.13.4.1614 for 1.7.10
+2021-07-05-15:19:28 -0400 INFO: Forge Downloaded
+2021-07-05-15:19:35 -0400 INFO: Server Installed
+2021-07-05-15:19:35 -0400 INFO: Forge was installed. Installed Server for indicated Minecraft and Forge Releases
