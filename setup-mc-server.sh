@@ -257,3 +257,4 @@ else
 	cd minecraft-server
 	SERVER_JAR=$(ls | grep "forge.*universal.*")
 	java $(get_setting jvmargs) -jar $SERVER_JAR nogui
+fi
