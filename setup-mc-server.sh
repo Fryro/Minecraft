@@ -86,14 +86,23 @@ function make_eula() {
 	fi
 
 	if ! (grep -q 'eula=true' eula.txt); then
-		read -p "Minecraft EULA: (https://account.mojang.com/documents/minecraft_eula). Do you accept the EULA? [y/n]: " eula_answer
-		if (echo $eula_answer | grep -i -q 'y'); then
-			echo "eula=true" > eula.txt
-			info "You have accepted the minecraft EULA."
+		
+		eula_state="get_setting eula"
+		if ! ($eula_state); then
+			error "You have not accepted the Minecraft Server EULA. Please read it and ensure 'eula=true' exists in 'settings.cfg'."
 		else
-			echo "eula=false" > eula.txt
-			info "You have not accepted the minecraft EULA. You will be unable to launch the server until you do so."
+			echo "eula=true" > eula.txt
+			info "You have accepted the Minecraft Server EULA."
 		fi
+
+#		read -p "Minecraft EULA: (https://account.mojang.com/documents/minecraft_eula). Do you accept the EULA? [y/n]: " eula_answer
+#		if (echo $eula_answer | grep -i -q 'y'); then
+#			echo "eula=true" > eula.txt
+#			info "You have accepted the minecraft EULA."
+#		else
+#			echo "eula=false" > eula.txt
+#			info "You have not accepted the minecraft EULA. You will be unable to launch the server until you do so."
+#		fi
 	fi
 
 	if ! (grep -q 'Minecraft EULA: (https://account.mojang.com/documents/minecraft_eula)' eula.txt); then
@@ -124,18 +133,21 @@ function get_mc_release() {
 function get_forge() {
 
 	# get the latest and recommended forge releases
-	FORGE_RELEASE="$(get_setting forge_release)"
+	FORGE_INSTALLER="get_setting forge_installer"
+	FORGE_RELEASE="$(get_forge_version $(get_setting forge_release))"
 	if [ -z "$FORGE_RELEASE" ]; then
-		PS3="Which forge version should be used?:"
-		latest="$(get_forge_version latest)"
-		recommended="$(get_forge_version recommended)"
-		select forge in $latest $recommended; do
-			info "forge version selected: $forge"
-			FORGE_RELEASE="$forge"
-			break
-		done
+		error "You must specify 'forge_release' as 'latest / recommended' in 'settings.cfg'."
 	fi
-
+		#PS3="Which forge version should be used?:"
+		#latest="$(get_forge_version latest)"
+		#recommended="$(get_forge_version recommended)"
+		#select forge in $latest $recommended; do
+		#	info "forge version selected: $forge"
+		#	FORGE_RELEASE="$forge"
+		#	break
+		#done
+	#fi
+	
 	if [ "$RELEASE" = "Pre 1.10" ]; then
 		append_to_url="-$MINECRAFT_RELEASE"
 	else
@@ -148,6 +160,7 @@ function get_forge() {
 		if curl -OL "https://maven.minecraftforge.net/net/minecraftforge/forge/${forge_to_use}/forge-${forge_to_use}-installer.jar"; then
 			info "Forge Downloaded"
 			FORGE_INSTALLER="forge-${forge_to_use}-installer.jar"
+			echo "forge_installer=$(FORGE_INSTALLER)" >> settings.cfg
 		else
 			error "Forge was unable to download, check curl error and re-run"
 			exit 3
