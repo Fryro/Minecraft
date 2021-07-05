@@ -29,7 +29,7 @@ function error() {
 }
 	
 function get_setting() {
-	setting="$(grep "^${1}=" "${SETTINGS_FILE}" | head -n 1 | cut -d= -f2)"
+	setting="$(grep "^${1}=" "${SETTINGS_FILE}" | head -n 1 | cut -d= -f2-)"
 	echo "$setting"
 }
 
