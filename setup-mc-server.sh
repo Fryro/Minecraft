@@ -62,13 +62,13 @@ function make_script_directories() {
 	if ! [ -e "minecraft-server" ]; then
 		mkdir minecraft-server
 	fi
-	if ! [ -e "minecraft-server/used-forge-files" ]; then
-		mkdir minecraft-server/used-forge-files
+	if ! [ -e "minecraft-server/used-files" ]; then
+		mkdir minecraft-server/used-files
 	fi
 	
 	# Logging
 	info "+++Begin Log+++"
-	info "Checking/Making Directories [minecraft-server, minecraft-server/used-forge-files]"
+	info "Checking/Making Directories [minecraft-server, minecraft-server/used-files]"
 }
 
 
@@ -180,10 +180,10 @@ function install_server() {
 	fi
 
 	# This line moves ForgeInstallerLogs to the 'used' directory.
-	mv ./forge*installer*.log used-forge-files/
+	mv ./forge*installer*.log used-files/
 
 	# This moves the 'used' forge installers away, to remove clutter.
-	mv ../*forge*installer* used-forge-files/	
+	mv ../*forge*installer* used-files/	
 	
 	# Logging
 	info "Forge was installed. Installed Server for indicated Minecraft and Forge Releases"
