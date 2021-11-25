@@ -62,13 +62,13 @@ function make_script_directories() {
 	if ! [ -e "minecraft-server" ]; then
 		mkdir minecraft-server
 	fi
-	if ! [ -e "minecraft-server/used-files" ]; then
-		mkdir minecraft-server/used-files
+	if ! [ -e "minecraft-server/used-forge-files" ]; then
+		mkdir minecraft-server/used-forge-files
 	fi
 	
 	# Logging
 	info "+++Begin Log+++"
-	info "Checking/Making Directories [minecraft-server, minecraft-server/used-files]"
+	info "Checking/Making Directories [minecraft-server, minecraft-server/used-forge-files]"
 }
 
 
@@ -170,6 +170,7 @@ function get_forge() {
 
 function install_server() {		
 	cd minecraft-server
+	info "Installing Forge Server..."
 	
 	# This line uses the forge installer. 
 	if java -jar ../$FORGE_INSTALLER --installServer; then
@@ -180,10 +181,10 @@ function install_server() {
 	fi
 
 	# This line moves ForgeInstallerLogs to the 'used' directory.
-	mv ./forge*installer*.log used-files/
+	mv ./forge*installer*.log used-forge-files/
 
 	# This moves the 'used' forge installers away, to remove clutter.
-	mv ../*forge*installer* used-files/	
+	mv ../*forge*installer* used-forge-files/	
 	
 	# Logging
 	info "Forge was installed. Installed Server for indicated Minecraft and Forge Releases"
@@ -227,19 +228,22 @@ if ! [ -e "settings.cfg" ]; then
 	error "No 'settings.cfg' file found, cannot continue."
 else
 	if [ "$RELEASE" = "Pre 1.10" ]; then
-		if ! ( ls "minecraft-server" | (grep -q "forge.*universal.*.jar")); then
+		if ! ( ls "minecraft-server" | (grep "forge.*universal.*.jar")); then
 			if ! [ -e "*forge*installer*.jar" ]; then
 				get_forge
 			fi
-			install_server
 		fi
+		install_server
 	elif [ "$RELEASE" = "Post 1.10" ]; then
-		if ! ( ls "minecraft-server" | (grep -q "forge.*.jar")); then
+		echo "DOING THIS"
+		if ! ( ls "minecraft-server" | (grep "forge.*.jar")); then
 			if ! [ -e "*forge*installer*.jar" ]; then
 				get_forge
 			fi
-			install_server
 		fi
+		install_server
+	else
+		echo "RELEASE Unknown! Wee Woo!"
 	fi
 fi
 
